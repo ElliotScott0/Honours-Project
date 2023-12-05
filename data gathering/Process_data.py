@@ -1,0 +1,162 @@
+import numpy as np
+
+from scipy.stats import kurtosis, skew
+from scipy.stats import entropy
+import matplotlib.pyplot as plt
+
+epoch_time = 0.5
+epoch_length = int(250*epoch_time)
+epoch_seconds = 4
+num_epochs = 0
+
+
+pre_calculations = []
+seizure_calculations = []
+
+
+class Process_data:
+
+ 
+
+  
+    
+    def epoch_transformer(data):
+        num_epochs = int(len(data)/epoch_length)
+        print(num_epochs)
+        # Create an array to store the epochs
+        epochs = np.zeros((num_epochs, epoch_length))
+
+        # Extract epochs from the EEG data
+        for i in range(num_epochs):
+            start_index = i * epoch_length
+            end_index = start_index + epoch_length
+            epochs[i] = data[start_index:end_index]
+            
+        return epochs
+
+
+    def calculate_rms(data):
+        return np.sqrt(np.mean(data**2))
+
+    # Function to calculate Log Energy
+    def calculate_log_energy(data):
+        return np.sum(np.log(1 + data**2))
+
+    # Function to calculate Normalized Entropy
+    def calculate_normalized_entropy(data):
+        probabilities = np.histogram(data, bins='auto', density=True)[0]
+        # Calculate entropy
+        ent = entropy(probabilities, base=2)
+        # Normalize entropy
+        normalized_entropy = ent / np.log(len(probabilities))
+        return normalized_entropy
+
+
+
+
+    def plot_percentiles(data, calculation, title):
+        percentile25 = []
+        percentile50 = []
+        percentile75 = []
+        for i in range(len(data)):
+            percentile25.append(np.percentile(data[i], 25))
+            percentile50.append(np.percentile(data[i], 50))
+            percentile75.append(np.percentile(data[i], 75))
+        #Plotting
+    
+        plt.plot(percentile25, marker='o')
+        plt.plot(percentile50, marker='s')
+        plt.plot(percentile75, marker='^')
+        #Plot vertical lines for percentiles
+        
+        plt.xlabel("epoch value")
+        plt.ylabel("value")
+        plt.title(calculation + title)
+
+        
+
+        #Show the plot
+        plt.show()
+
+
+    def get_sorted_epochs(epochs, label):
+        rms_values = []
+        kurtosis_values = []
+        skewness_values = []
+        mad_values = []
+        normalized_entropy_values = []
+        log_energy_values = []
+        std_dev_values = []
+        variance_values = []
+        
+
+        for i in range(int(epoch_seconds/epoch_time)):
+            partial_rms_values = []
+            partial_variance_values = []
+            partial_std_dev_values = []
+            partial_log_energy_values = []
+            partial_normalized_entropy_values = []
+            partial_mad_values = []
+            partial_kurtosis_values = []
+            partial_skewness_values = []
+
+            for y in range(0, len(epochs), int(epoch_seconds/epoch_time)):
+                
+                try:
+                    partial_rms_values.append(Process_data.calculate_rms(epochs[y+i]))
+                    partial_variance_values.append(np.var(epochs[y+i]))
+                    partial_std_dev_values.append(np.std(epochs[y+i]))
+                    partial_log_energy_values.append(Process_data.calculate_log_energy(epochs[y+i]))
+                    partial_normalized_entropy_values.append(Process_data.calculate_normalized_entropy(epochs[y+i]))
+                    partial_mad_values.append(np.mean(np.abs(epochs[y+i] - np.mean(epochs[y+i]))))  # Mean Absolute Deviation
+                    partial_kurtosis_values.append(kurtosis(epochs[y+i]))
+                    partial_skewness_values.append(skew(epochs[y+i]))
+
+                except IndexError:
+                    
+                    print(f"Skipping index {y + i}, exceeds length of epochs")
+
+                
+
+            rms_values.append(partial_rms_values)
+            variance_values.append(partial_variance_values)
+            std_dev_values.append(partial_std_dev_values)
+            log_energy_values.append(partial_log_energy_values)
+            normalized_entropy_values.append(partial_normalized_entropy_values)
+            mad_values.append(partial_mad_values)
+            kurtosis_values.append(partial_kurtosis_values)
+            skewness_values.append(partial_skewness_values)
+
+
+        if label == "pre":      
+            pre_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values]
+            
+        else:   
+            seizure_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values]
+
+        Process_data.plot_percentiles(rms_values, "rms_value ", label)
+        Process_data.plot_percentiles(variance_values, "variance_value ", label)
+        Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
+        Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
+        Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
+        Process_data.plot_percentiles(mad_values, "mad_value ", label)
+        Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
+        Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
+        
+            
+    def main(data): 
+
+        merged_pre_seizure = [element for row in data[0] for element in row]
+        merged_seizure = [element for row in data[1] for element in row]
+
+
+        pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
+        seizure_epochs = Process_data.epoch_transformer(merged_seizure)
+
+        Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
+        Process_data.get_sorted_epochs(seizure_epochs, "seizure")
+
+        calculated_data = [pre_calculations, seizure_calculations]
+
+        return calculated_data
+
