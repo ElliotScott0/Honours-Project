@@ -1,3 +1,4 @@
+from Get_Set import Get_set
 from glob import glob
 import pathlib
 import os
@@ -21,6 +22,8 @@ all_file_path_csv =list(seizureFile.rglob("*.csv"))
 
 secondSample = 250
 fourSecondSample = secondSample * 4
+
+seizure_numbers = 0
 
 
 #reads seizure from file by setting channel, start time, for length of seizure
@@ -52,7 +55,7 @@ class Collect_data:
                         file_path_str = str(all_file_path[y])
                         file = pyedflib.EdfReader(file_path_str)
 
-                        
+                        #seizure_numbers += 1
                         #begin pre seizure, if 4 seconds before is before start of file then start from 0
                         pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
                         
@@ -82,8 +85,9 @@ class Collect_data:
                         
                 
             file_obj.close()
-
-        data = [pre_seizure, seizure]
+        #print(seizure_numbers)
+        Get_set.pre_seizure_data = pre_seizure
+        Get_set.seizure_data = seizure
         return data
 
     
