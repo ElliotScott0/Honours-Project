@@ -59,7 +59,7 @@ class Collect_data:
                         #begin pre seizure, if 4 seconds before is before start of file then start from 0
                         pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
                         
-                        if(pre_seizure_value[0] != -163 or pre_seizure_value[0] != 163):                      
+                        if(pre_seizure_value[0] != -163):                      
                             pre_seizure.append(pre_seizure_value)
                         seizure.append(file.readSignal(channel, start_time , fourSecondSample, True))
                         
@@ -85,7 +85,7 @@ class Collect_data:
                         
                 
             file_obj.close()
-        print(len(seizure) , "seizure events found for" , seizure_type)
+        print(len(pre_seizure) , "seizure events found for" , seizure_type)
         Get_set.pre_seizure_data = pre_seizure
         Get_set.seizure_data = seizure
         return data

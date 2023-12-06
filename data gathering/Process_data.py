@@ -16,7 +16,7 @@ seizure_calculations = []
 
 class Process_data:
 
-    
+    # turns the eeg data into epochs of desired legnth
     def epoch_transformer(data):
         num_epochs = int(len(data)/epoch_length)
         #print(num_epochs)
@@ -31,7 +31,7 @@ class Process_data:
             
         return epochs
 
-
+    #function to calculate rms
     def calculate_rms(data):
         return np.sqrt(np.mean(data**2))
 
@@ -48,24 +48,30 @@ class Process_data:
         normalized_entropy = ent / np.log(len(probabilities))
         return normalized_entropy
 
-
+    # function to calculate FFT and return array of values for max magnitude and frequency at that point
     def calculate_fft(data):
-        fft = []
+        fft_max_frequency = []
+        fft_max_magnitude = []
+        fft_max = []
         for i in range(len(data)):
             EEG_fft = np.fft.fft(data[i])
 
             freq = np.arange(1, 1001) / 1000 * 125
-            #print(np.argmax(np.abs(EEG_fft[:1000])))
-           # plt.figure()
-           # plt.plot(freq, np.abs(EEG_fft[:1000]))
-           # plt.xlabel('Frequency (Hz)')
-           # plt.ylabel('Magnitude')
-           # plt.title('FFT of EEG Data')
-           # plt.show()
-            fft.append(EEG_fft) 
-        return fft
+            
+            plt.figure()
+            plt.plot(freq, np.abs(EEG_fft[:1000]))
+            plt.xlabel('Frequency (Hz)')
+            plt.ylabel('Magnitude')
+            plt.title('FFT of EEG Data')
+            plt.show()
 
-    
+            fft_max_frequency.append(np.argmax(np.abs(EEG_fft[:1000]))) 
+            fft_max_magnitude.append(np.max(np.abs(EEG_fft[:1000]))) 
+        fft_max.append(fft_max_magnitude)
+        fft_max.append(fft_max_frequency)
+        return fft_max
+
+    #plots graphs with percentiles of calculated data
     def plot_percentiles(data, calculation, title):
         percentile25 = []
         percentile50 = []
@@ -90,7 +96,7 @@ class Process_data:
         #Show the plot
         plt.show()
 
-
+    # calls calculation functions on every epoch in certain order then puts values into arrays. order is the time in which the epoch is placed within the eeg data
     def get_sorted_epochs(epochs, label):
         data = []
         rms_values = []
@@ -142,14 +148,14 @@ class Process_data:
 
 
         
-        #Process_data.plot_percentiles(rms_values, "rms_value ", label)
-        #Process_data.plot_percentiles(variance_values, "variance_value ", label)
-        #Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
-        #Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
-        #Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
-        #Process_data.plot_percentiles(mad_values, "mad_value ", label)
-        #Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
-        #Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
+        Process_data.plot_percentiles(rms_values, "rms_value ", label)
+        Process_data.plot_percentiles(variance_values, "variance_value ", label)
+        Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
+        Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
+        Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
+        Process_data.plot_percentiles(mad_values, "mad_value ", label)
+        Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
+        Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
 
              
         data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values]
@@ -158,7 +164,7 @@ class Process_data:
         
         return data
         
-            
+    #runs functions        
     def main(): 
 
         pre_data = Get_set.pre_seizure_data
