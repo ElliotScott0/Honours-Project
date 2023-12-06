@@ -50,17 +50,20 @@ class Process_data:
 
 
     def calculate_fft(data):
+        fft = []
         for i in range(len(data)):
             EEG_fft = np.fft.fft(data[i])
 
             freq = np.arange(1, 1001) / 1000 * 125
             #print(np.argmax(np.abs(EEG_fft[:1000])))
-            plt.figure()
-            plt.plot(freq, np.abs(EEG_fft[:1000]))
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Magnitude')
-            plt.title('FFT of EEG Data')
-            plt.show()
+           # plt.figure()
+           # plt.plot(freq, np.abs(EEG_fft[:1000]))
+           # plt.xlabel('Frequency (Hz)')
+           # plt.ylabel('Magnitude')
+           # plt.title('FFT of EEG Data')
+           # plt.show()
+            fft.append(EEG_fft) 
+        return fft
 
     
     def plot_percentiles(data, calculation, title):
@@ -89,6 +92,7 @@ class Process_data:
 
 
     def get_sorted_epochs(epochs, label):
+        data = []
         rms_values = []
         kurtosis_values = []
         skewness_values = []
@@ -137,21 +141,22 @@ class Process_data:
             skewness_values.append(partial_skewness_values)
 
 
-        if label == "pre":      
-            pre_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values]
-            
-            
-        else:   
-            seizure_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values]
+        
+        #Process_data.plot_percentiles(rms_values, "rms_value ", label)
+        #Process_data.plot_percentiles(variance_values, "variance_value ", label)
+        #Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
+        #Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
+        #Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
+        #Process_data.plot_percentiles(mad_values, "mad_value ", label)
+        #Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
+        #Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
 
-        Process_data.plot_percentiles(rms_values, "rms_value ", label)
-        Process_data.plot_percentiles(variance_values, "variance_value ", label)
-        Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
-        Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
-        Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
-        Process_data.plot_percentiles(mad_values, "mad_value ", label)
-        Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
-        Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
+             
+        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values]
+            
+            
+        
+        return data
         
             
     def main(): 
@@ -159,7 +164,7 @@ class Process_data:
         pre_data = Get_set.pre_seizure_data
         seizure_data = Get_set.seizure_data
 
-        print(len(pre_data))
+        
 
         merged_pre_seizure = [element for row in pre_data for element in row]
         merged_seizure = [element for row in seizure_data for element in row]
@@ -168,11 +173,16 @@ class Process_data:
         pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
         seizure_epochs = Process_data.epoch_transformer(merged_seizure)
 
-        Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
-        Process_data.get_sorted_epochs(seizure_epochs, "seizure")
+        pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
+        seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
 
         pre_fft = Process_data.calculate_fft(pre_data)
         seizure_fft = Process_data.calculate_fft(seizure_data)
+
+        pre_calculations.append(pre_fft)
+        seizure_calculations.append(seizure_fft)
+
+        
 
         Get_set.pre_seizure_calculations = pre_calculations
         Get_set.seizure_calculations = seizure_calculations

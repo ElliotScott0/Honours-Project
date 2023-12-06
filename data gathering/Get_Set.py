@@ -1,5 +1,3 @@
-
-
 class Get_set:
     def __init__(self, pre_seizure_data: list, seizure_data: list, pre_seizure_calculations: list, seizure_calculations: list):
         self._pre_seizure_data = pre_seizure_data
@@ -7,40 +5,43 @@ class Get_set:
         self._pre_seizure_calculations = pre_seizure_calculations
         self._seizure_calculations = seizure_calculations
     
-  
+    # creates a property to return seizure data
     @property   
     def seizure_data(self):
         return self._seizure_data
     
+    # sets the property for seizure data
     @seizure_data.setter
     def seizure_data(self, value: list):
         self._seizure_data = value[:]
     
-    
+    # creates a property to return pre seizure data
     @property    
     def pre_seizure_data(self):
         return self._pre_seizure_data 
 
-
+    # sets the property for pre seizure data
     @pre_seizure_data.setter
-    def set_pre_seizure_data(self, value: list):
-        
+    def set_pre_seizure_data(self, value: list):      
         self._pre_seizure_data = value[:]
 
+    # creates a property to return seizure calculations
     @property
     def seizure_calculations(self):
         return self._seizure_calculations
     
+    # sets the property for seizure calculations
     @seizure_calculations.setter
     def seizure_calculations(self, value: list):
         self._seizure_data = value[:]
     
 
-
+    # creates a property to return pre seizure calculations
     @property
     def pre_seizure_calculations(self):
         return self._pre_seizure_calculations 
 
+    # sets the property for pre seizure calculations
     @pre_seizure_calculations.setter
     def pre_seizure_calculations(self, value: list):
         self._pre_seizure_data = value[:]

@@ -55,7 +55,7 @@ class Collect_data:
                         file_path_str = str(all_file_path[y])
                         file = pyedflib.EdfReader(file_path_str)
 
-                        #seizure_numbers += 1
+                        
                         #begin pre seizure, if 4 seconds before is before start of file then start from 0
                         pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
                         
@@ -85,7 +85,7 @@ class Collect_data:
                         
                 
             file_obj.close()
-        #print(seizure_numbers)
+        print(len(seizure) , "seizure events found for" , seizure_type)
         Get_set.pre_seizure_data = pre_seizure
         Get_set.seizure_data = seizure
         return data
