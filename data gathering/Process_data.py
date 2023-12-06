@@ -1,11 +1,11 @@
 import numpy as np
-
+from Get_Set import Get_set
 from scipy.stats import kurtosis, skew
 from scipy.stats import entropy
 import matplotlib.pyplot as plt
 
 epoch_time = 0.5
-epoch_length = int(250*epoch_time)
+epoch_length = int(250*epoch_time)  # change to 250/epoch time if epoch time is > 1
 epoch_seconds = 4
 num_epochs = 0
 
@@ -16,13 +16,10 @@ seizure_calculations = []
 
 class Process_data:
 
- 
-
-  
     
     def epoch_transformer(data):
         num_epochs = int(len(data)/epoch_length)
-        print(num_epochs)
+        #print(num_epochs)
         # Create an array to store the epochs
         epochs = np.zeros((num_epochs, epoch_length))
 
@@ -52,8 +49,20 @@ class Process_data:
         return normalized_entropy
 
 
+    def calculate_fft(data):
+        for i in range(len(data)):
+            EEG_fft = np.fft.fft(data[i])
 
+            freq = np.arange(1, 1001) / 1000 * 125
+            #print(np.argmax(np.abs(EEG_fft[:1000])))
+            plt.figure()
+            plt.plot(freq, np.abs(EEG_fft[:1000]))
+            plt.xlabel('Frequency (Hz)')
+            plt.ylabel('Magnitude')
+            plt.title('FFT of EEG Data')
+            plt.show()
 
+    
     def plot_percentiles(data, calculation, title):
         percentile25 = []
         percentile50 = []
@@ -129,7 +138,8 @@ class Process_data:
 
 
         if label == "pre":      
-            pre_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values]
+            pre_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values]
+            
             
         else:   
             seizure_calculations =[rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values]
@@ -144,10 +154,15 @@ class Process_data:
         Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
         
             
-    def main(data): 
+    def main(): 
 
-        merged_pre_seizure = [element for row in data[0] for element in row]
-        merged_seizure = [element for row in data[1] for element in row]
+        pre_data = Get_set.pre_seizure_data
+        seizure_data = Get_set.seizure_data
+
+        print(len(pre_data))
+
+        merged_pre_seizure = [element for row in pre_data for element in row]
+        merged_seizure = [element for row in seizure_data for element in row]
 
 
         pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
@@ -156,7 +171,11 @@ class Process_data:
         Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
         Process_data.get_sorted_epochs(seizure_epochs, "seizure")
 
-        calculated_data = [pre_calculations, seizure_calculations]
+        pre_fft = Process_data.calculate_fft(pre_data)
+        seizure_fft = Process_data.calculate_fft(seizure_data)
 
-        return calculated_data
+        Get_set.pre_seizure_calculations = pre_calculations
+        Get_set.seizure_calculations = seizure_calculations
+
+       
 
