@@ -23,7 +23,6 @@ all_file_path_csv =list(seizureFile.rglob("*.csv"))
 secondSample = 250
 fourSecondSample = secondSample * 4
 
-seizure_numbers = 0
 
 
 #reads seizure from file by setting channel, start time, for length of seizure
@@ -31,8 +30,13 @@ seizure_numbers = 0
 #print(len(abcent_file_path))
 class Collect_data:
     def get_data():
+        
+        patient_count = 0
+        old_file_path = 'a'
         pre_seizure = []
         seizure = []
+
+
         for y in range(len(all_file_path)):
             with open(str(all_file_path_csv[y])) as file_obj: 
         
@@ -45,6 +49,9 @@ class Collect_data:
                     # if finds correct seizure and channel
                     if(seizure_type in row and channel_name in row):
                         
+                        if (old_file_path != all_file_path_csv[y]):
+                            patient_count +=1
+                            old_file_path = all_file_path_csv[y]
                         #sets channel
                         channel = 18
                         
@@ -86,6 +93,7 @@ class Collect_data:
                 
             file_obj.close()
         print(len(pre_seizure) , "seizure events found for" , seizure_type)
+        print(patient_count , "patients found for" , seizure_type)
         Get_set.pre_seizure_data = pre_seizure
         Get_set.seizure_data = seizure
         return data

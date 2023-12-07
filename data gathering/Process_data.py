@@ -14,7 +14,10 @@ pre_calculations = []
 seizure_calculations = []
 
 
+
+
 class Process_data:
+
 
     # turns the eeg data into epochs of desired legnth
     def epoch_transformer(data):
@@ -47,6 +50,29 @@ class Process_data:
         # Normalize entropy
         normalized_entropy = ent / np.log(len(probabilities))
         return normalized_entropy
+    
+    def calculate_fft_mag(data):
+        
+        freq =  np.linspace(0, 125, 63, endpoint=False)
+        EEG_fft = np.fft.fft(data)
+
+        
+        plt.figure()
+        plt.plot(freq, np.abs(EEG_fft[:63]))
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Magnitude')
+        plt.title('FFT of epoch Data')
+        plt.show()
+            
+        return np.argmax(np.abs(EEG_fft[:125]))
+
+    def calculate_fft_fre(data):
+        
+        
+        EEG_fft = np.fft.fft(data)
+
+            
+        return np.max(np.abs(EEG_fft[:125]))
 
     # function to calculate FFT and return array of values for max magnitude and frequency at that point
     def calculate_fft(data):
@@ -82,12 +108,12 @@ class Process_data:
             percentile75.append(np.percentile(data[i], 75))
         #Plotting
     
-        plt.plot(percentile25, marker='o')
-        plt.plot(percentile50, marker='s')
-        plt.plot(percentile75, marker='^')
+        plt.plot(percentile25, marker='o', label='25')
+        plt.plot(percentile50, marker='s', label='50')
+        plt.plot(percentile75, marker='^', label='75')
         #Plot vertical lines for percentiles
-        
-        plt.xlabel("epoch value")
+        plt.legend(loc='upper right', fontsize='small')
+        #plt.xlabel("epoch value", + epoch_length, + " second intervals")
         plt.ylabel("value")
         plt.title(calculation + title)
 
@@ -108,6 +134,9 @@ class Process_data:
         std_dev_values = []
         variance_values = []
         
+        fft_max_frequency = []
+        fft_max_magnitude = []
+        
 
         for i in range(int(epoch_seconds/epoch_time)):
             partial_rms_values = []
@@ -118,6 +147,8 @@ class Process_data:
             partial_mad_values = []
             partial_kurtosis_values = []
             partial_skewness_values = []
+            partial_fft_max_frequency = []
+            partial_fft_max_magnitude = []
 
             for y in range(0, len(epochs), int(epoch_seconds/epoch_time)):
                 
@@ -130,12 +161,14 @@ class Process_data:
                     partial_mad_values.append(np.mean(np.abs(epochs[y+i] - np.mean(epochs[y+i]))))  # Mean Absolute Deviation
                     partial_kurtosis_values.append(kurtosis(epochs[y+i]))
                     partial_skewness_values.append(skew(epochs[y+i]))
-
+                    
+                   
                 except IndexError:
                     
                     print(f"Skipping index {y + i}, exceeds length of epochs")
 
-                
+                partial_fft_max_frequency.append(Process_data.calculate_fft_mag(epochs[y+i]))
+                partial_fft_max_magnitude.append(Process_data.calculate_fft_fre(epochs[y+i]))
 
             rms_values.append(partial_rms_values)
             variance_values.append(partial_variance_values)
@@ -146,6 +179,8 @@ class Process_data:
             kurtosis_values.append(partial_kurtosis_values)
             skewness_values.append(partial_skewness_values)
 
+            fft_max_frequency.append(partial_fft_max_frequency)
+            fft_max_magnitude.append(partial_fft_max_magnitude)
 
         
         Process_data.plot_percentiles(rms_values, "rms_value ", label)
@@ -157,8 +192,11 @@ class Process_data:
         Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
         Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
 
+        Process_data.plot_percentiles(fft_max_frequency, "fft_max_frequency ", label)
+        Process_data.plot_percentiles(fft_max_magnitude, "fft_max_magnitude ", label)
+
              
-        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values]
+        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, fft_max_frequency, fft_max_magnitude]
             
             
         
@@ -175,18 +213,21 @@ class Process_data:
         merged_pre_seizure = [element for row in pre_data for element in row]
         merged_seizure = [element for row in seizure_data for element in row]
 
-
+       
         pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
         seizure_epochs = Process_data.epoch_transformer(merged_seizure)
 
+
+        print(len(pre_epochs))
+        
         pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
         seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
 
         pre_fft = Process_data.calculate_fft(pre_data)
         seizure_fft = Process_data.calculate_fft(seizure_data)
 
-        pre_calculations.append(pre_fft)
-        seizure_calculations.append(seizure_fft)
+        #pre_calculations.append(pre_fft)
+        #seizure_calculations.append(seizure_fft)
 
         
 
