@@ -98,7 +98,7 @@ class Collect_data:
                         
                 
             file_obj.close()
-        print(len(pre_seizure) , "seizure events found for" , seizure_type)
+        print(len(pre_during_seizure) , "seizure events found for" , seizure_type)
         print(patient_count , "patients found for" , seizure_type)
         Get_set.pre_seizure_data = pre_seizure
         Get_set.seizure_data = seizure

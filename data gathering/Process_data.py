@@ -83,28 +83,7 @@ class Process_data:
             
         return np.argmax(np.abs(Epoch_fft[:63]))
 
-    # function to calculate FFT and return array of values for max magnitude and frequency at that point
-    def calculate_fft(data):
-        fft_max_frequency = []
-        fft_max_magnitude = []
-        fft_max = []
-        for i in range(len(data)):
-            EEG_fft = np.fft.fft(data[i])
-
-            freq = np.arange(1, 1001) / 1000 * 125
-            
-            plt.figure()
-            plt.plot(freq, np.abs(EEG_fft[:1000]))
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Magnitude')
-            plt.title('FFT of EEG Data')
-            plt.show()
-
-            fft_max_frequency.append(np.argmax(np.abs(EEG_fft[:1000]))) 
-            fft_max_magnitude.append(np.max(np.abs(EEG_fft[:1000]))) 
-        fft_max.append(fft_max_magnitude)
-        fft_max.append(fft_max_frequency)
-        return fft_max
+  
 
     #plots graphs with percentiles of calculated data
     def plot_percentiles(data, calculation, title):
@@ -216,18 +195,14 @@ class Process_data:
         return data
     
     # sorts data into arrays of patients for machine learning
-    def sort_data(itteration, data):  
+    def sort_data(data):  
         
         sorted_data = []
-        
-        
         for i in range(len(data[0])):
             partial_sorted_data = []
             for j in range(len(data)):
                 partial_sorted_data.append(data[j][i])
-            
             sorted_data.append(partial_sorted_data)
-        
         return sorted_data
     
     #runs functions        
@@ -255,11 +230,9 @@ class Process_data:
 
         entire_seizure_calculations = Process_data.get_sorted_epochs(entire_seizure_epochs, "pre + during seizure")
 
-        #pre_fft = Process_data.calculate_fft(pre_data)
-        #seizure_fft = Process_data.calculate_fft(seizure_data)
 
         for i in range(len(entire_seizure_calculations)):
-            sorted_seizure_calculations.append(Process_data.sort_data(i, entire_seizure_calculations[i]))
+            sorted_seizure_calculations.append(Process_data.sort_data(entire_seizure_calculations[i]))
 
         #pre_calculations.append(pre_fft)
         #seizure_calculations.append(seizure_fft)
