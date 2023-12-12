@@ -22,6 +22,7 @@ all_file_path_csv =list(seizureFile.rglob("*.csv"))
 
 secondSample = 250
 fourSecondSample = secondSample * 4
+eightSecondSample = secondSample * 8
 
 
 
@@ -35,6 +36,7 @@ class Collect_data:
         old_file_path = 'a'
         pre_seizure = []
         seizure = []
+        pre_during_seizure = []
 
 
         for y in range(len(all_file_path)):
@@ -64,15 +66,19 @@ class Collect_data:
 
                         
                         #begin pre seizure, if 4 seconds before is before start of file then start from 0
-                        pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
+                        #pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
                         
-                        if(pre_seizure_value[0] != -163):                      
-                            pre_seizure.append(pre_seizure_value)
-                        seizure.append(file.readSignal(channel, start_time , fourSecondSample, True))
+                        #if(pre_seizure_value[0] != -163):                      
+                            #pre_seizure.append(pre_seizure_value)
+                        #seizure.append(file.readSignal(channel, start_time , fourSecondSample, True))
                         
-                    
                         
-
+                        
+                        pre_during_value = file.readSignal(channel, start_time - fourSecondSample, eightSecondSample, True)
+                        
+                        if(pre_during_value[0] != -163):                      
+                            pre_during_seizure.append(pre_during_value)
+                        
                             
                         
                         file.close()
@@ -96,6 +102,7 @@ class Collect_data:
         print(patient_count , "patients found for" , seizure_type)
         Get_set.pre_seizure_data = pre_seizure
         Get_set.seizure_data = seizure
+        Get_set.pre_during_data = pre_during_seizure
         return data
 
     

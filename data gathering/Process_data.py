@@ -5,15 +5,15 @@ from scipy.stats import entropy
 import matplotlib.pyplot as plt
 
 epoch_time = 0.5
-epoch_length = int(250*epoch_time)  # change to 250/epoch time if epoch time is > 1
-epoch_seconds = 4
+epoch_length = int(250*epoch_time)  # change to 250/epoch time if epoch time is > 1 and do same further down when changing plotting
+epoch_seconds = 8
 num_epochs = 0
 
 
 pre_calculations = []
 seizure_calculations = []
 
-
+sorted_seizure_calculations = []
 
 
 class Process_data:
@@ -22,7 +22,7 @@ class Process_data:
     # turns the eeg data into epochs of desired legnth
     def epoch_transformer(data):
         num_epochs = int(len(data)/epoch_length)
-        #print(num_epochs)
+        print(num_epochs)
         # Create an array to store the epochs
         epochs = np.zeros((num_epochs, epoch_length))
 
@@ -53,26 +53,35 @@ class Process_data:
     
     def calculate_fft_mag(data):
         
-        freq =  np.linspace(0, 125, 63, endpoint=False)
-        EEG_fft = np.fft.fft(data)
-
+       
         
-        plt.figure()
-        plt.plot(freq, np.abs(EEG_fft[:63]))
-        plt.xlabel('Frequency (Hz)')
-        plt.ylabel('Magnitude')
-        plt.title('FFT of epoch Data')
-        plt.show()
+        signal_without_dc = data - np.mean(data)
+        
+        Epoch_fft = np.fft. rfft(signal_without_dc)
+
+
             
-        return np.argmax(np.abs(EEG_fft[:125]))
+        return np.max(np.abs(Epoch_fft[:63]))
 
     def calculate_fft_fre(data):
         
         
-        EEG_fft = np.fft.fft(data)
+        signal_without_dc = data - np.mean(data)
+        
+        Epoch_fft = np.fft.rfft(signal_without_dc)
 
+        #print(np.argmax(np.abs(Epoch_fft[:63])))
+        
+        
+        freq =  np.linspace(0, 125, 63, endpoint=False)
+        #plt.figure()
+        #plt.plot(freq, np.abs(Epoch_fft[:63]))
+        #plt.xlabel('Frequency (Hz)')
+        #plt.ylabel('Magnitude')
+        #plt.title('FFT of epoch Data')
+        #plt.show()
             
-        return np.max(np.abs(EEG_fft[:125]))
+        return np.argmax(np.abs(Epoch_fft[:63]))
 
     # function to calculate FFT and return array of values for max magnitude and frequency at that point
     def calculate_fft(data):
@@ -107,13 +116,17 @@ class Process_data:
             percentile50.append(np.percentile(data[i], 50))
             percentile75.append(np.percentile(data[i], 75))
         #Plotting
-    
-        plt.plot(percentile25, marker='o', label='25')
-        plt.plot(percentile50, marker='s', label='50')
-        plt.plot(percentile75, marker='^', label='75')
+
+        # change to / when epoch length changes to 1 or over 
+        half_second_interval = np.arange(0, len(percentile25) * epoch_time, epoch_time)
+
+        plt.plot(half_second_interval, percentile25, marker='o', label='25')
+        plt.plot(half_second_interval, percentile50, marker='s', label='50')
+        plt.plot(half_second_interval, percentile75, marker='^', label='75')
         #Plot vertical lines for percentiles
         plt.legend(loc='upper right', fontsize='small')
-        #plt.xlabel("epoch value", + epoch_length, + " second intervals")
+        plt.axvline(x=len(percentile25) * epoch_time  * 0.5 - epoch_time, color='red', linestyle='--', label='Midpoint')
+        plt.xlabel(f"Epoch value, {epoch_time} second intervals")
         plt.ylabel("value")
         plt.title(calculation + title)
 
@@ -161,15 +174,15 @@ class Process_data:
                     partial_mad_values.append(np.mean(np.abs(epochs[y+i] - np.mean(epochs[y+i]))))  # Mean Absolute Deviation
                     partial_kurtosis_values.append(kurtosis(epochs[y+i]))
                     partial_skewness_values.append(skew(epochs[y+i]))
-                    
+                    partial_fft_max_frequency.append(Process_data.calculate_fft_fre(epochs[y+i]))
+                    partial_fft_max_magnitude.append(Process_data.calculate_fft_mag(epochs[y+i]))
                    
                 except IndexError:
                     
                     print(f"Skipping index {y + i}, exceeds length of epochs")
 
-                partial_fft_max_frequency.append(Process_data.calculate_fft_mag(epochs[y+i]))
-                partial_fft_max_magnitude.append(Process_data.calculate_fft_fre(epochs[y+i]))
-
+                
+            
             rms_values.append(partial_rms_values)
             variance_values.append(partial_variance_values)
             std_dev_values.append(partial_std_dev_values)
@@ -182,7 +195,7 @@ class Process_data:
             fft_max_frequency.append(partial_fft_max_frequency)
             fft_max_magnitude.append(partial_fft_max_magnitude)
 
-        
+        #print(len(rms_values[0]))
         Process_data.plot_percentiles(rms_values, "rms_value ", label)
         Process_data.plot_percentiles(variance_values, "variance_value ", label)
         Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
@@ -198,41 +211,65 @@ class Process_data:
              
         data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, fft_max_frequency, fft_max_magnitude]
             
-            
+          
         
         return data
+    
+    # sorts data into arrays of patients for machine learning
+    def sort_data(itteration, data):  
         
+        sorted_data = []
+        
+        
+        for i in range(len(data[0])):
+            partial_sorted_data = []
+            for j in range(len(data)):
+                partial_sorted_data.append(data[j][i])
+            
+            sorted_data.append(partial_sorted_data)
+        
+        return sorted_data
+    
     #runs functions        
     def main(): 
 
-        pre_data = Get_set.pre_seizure_data
-        seizure_data = Get_set.seizure_data
+        #pre_data = Get_set.pre_seizure_data
+        #seizure_data = Get_set.seizure_data
 
-        
+        entire_seizure_data = Get_set.pre_during_data
 
-        merged_pre_seizure = [element for row in pre_data for element in row]
-        merged_seizure = [element for row in seizure_data for element in row]
+        #merged_pre_seizure = [element for row in pre_data for element in row]
+        #merged_seizure = [element for row in seizure_data for element in row]
 
+        merged_entire_seizure = [element for row in entire_seizure_data for element in row]
        
-        pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
-        seizure_epochs = Process_data.epoch_transformer(merged_seizure)
+        #pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
+        #seizure_epochs = Process_data.epoch_transformer(merged_seizure)
 
+        entire_seizure_epochs = Process_data.epoch_transformer(merged_entire_seizure)
 
-        print(len(pre_epochs))
+        #print(len(pre_epochs))
         
-        pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
-        seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
+        #pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
+        #seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
 
-        pre_fft = Process_data.calculate_fft(pre_data)
-        seizure_fft = Process_data.calculate_fft(seizure_data)
+        entire_seizure_calculations = Process_data.get_sorted_epochs(entire_seizure_epochs, "pre + during seizure")
+
+        #pre_fft = Process_data.calculate_fft(pre_data)
+        #seizure_fft = Process_data.calculate_fft(seizure_data)
+
+        for i in range(len(entire_seizure_calculations)):
+            sorted_seizure_calculations.append(Process_data.sort_data(i, entire_seizure_calculations[i]))
 
         #pre_calculations.append(pre_fft)
         #seizure_calculations.append(seizure_fft)
 
         
 
-        Get_set.pre_seizure_calculations = pre_calculations
-        Get_set.seizure_calculations = seizure_calculations
+        #Get_set.pre_seizure_calculations = pre_calculations
+        #Get_set.seizure_calculations = seizure_calculations
+
+        Get_set.entire_seizure_calculations = sorted_seizure_calculations
 
        
 
