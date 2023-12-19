@@ -1,19 +1,20 @@
+from Collect_data import total_sample
 import numpy as np
 from Get_Set import Get_set
 from scipy.stats import kurtosis, skew
 from scipy.stats import entropy
 import matplotlib.pyplot as plt
 
-epoch_time = 0.5
+epoch_time = 0.2
 epoch_length = int(250*epoch_time)  # change to 250/epoch time if epoch time is > 1 and do same further down when changing plotting
-epoch_seconds = 8
+epoch_seconds = total_sample/250
 num_epochs = 0
 
 
 pre_calculations = []
 seizure_calculations = []
 
-sorted_seizure_calculations = []
+
 
 
 class Process_data:
@@ -22,7 +23,7 @@ class Process_data:
     # turns the eeg data into epochs of desired legnth
     def epoch_transformer(data):
         num_epochs = int(len(data)/epoch_length)
-        print(num_epochs)
+        
         # Create an array to store the epochs
         epochs = np.zeros((num_epochs, epoch_length))
 
@@ -68,19 +69,8 @@ class Process_data:
         
         signal_without_dc = data - np.mean(data)
         
-        Epoch_fft = np.fft.rfft(signal_without_dc)
-
-        #print(np.argmax(np.abs(Epoch_fft[:63])))
-        
-        
-        freq =  np.linspace(0, 125, 63, endpoint=False)
-        #plt.figure()
-        #plt.plot(freq, np.abs(Epoch_fft[:63]))
-        #plt.xlabel('Frequency (Hz)')
-        #plt.ylabel('Magnitude')
-        #plt.title('FFT of epoch Data')
-        #plt.show()
-            
+        Epoch_fft = np.fft.fft(signal_without_dc)
+          
         return np.argmax(np.abs(Epoch_fft[:63]))
 
   
@@ -175,27 +165,27 @@ class Process_data:
             fft_max_magnitude.append(partial_fft_max_magnitude)
 
         #print(len(rms_values[0]))
-        Process_data.plot_percentiles(rms_values, "rms_value ", label)
-        Process_data.plot_percentiles(variance_values, "variance_value ", label)
-        Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
-        Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
-        Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
-        Process_data.plot_percentiles(mad_values, "mad_value ", label)
-        Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
-        Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
+        #Process_data.plot_percentiles(rms_values, "rms_value ", label)
+        #Process_data.plot_percentiles(variance_values, "variance_value ", label)
+        #Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
+        #Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
+        #Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
+        #Process_data.plot_percentiles(mad_values, "mad_value ", label)
+        #Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
+        #Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
 
-        Process_data.plot_percentiles(fft_max_frequency, "fft_max_frequency ", label)
-        Process_data.plot_percentiles(fft_max_magnitude, "fft_max_magnitude ", label)
+        #Process_data.plot_percentiles(fft_max_frequency, "fft_max_frequency ", label)
+        #Process_data.plot_percentiles(fft_max_magnitude, "fft_max_magnitude ", label)
 
              
-        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, fft_max_frequency, fft_max_magnitude]
+        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values, fft_max_frequency, fft_max_magnitude]
             
           
         
         return data
     
     # sorts data into arrays of patients for machine learning
-    def sort_data(data):  
+    def format_data(data):  
         
         sorted_data = []
         for i in range(len(data[0])):
@@ -206,17 +196,18 @@ class Process_data:
         return sorted_data
     
     #runs functions        
-    def main(): 
+    def main(data): 
 
+        sorted_seizure_calculations = []
         #pre_data = Get_set.pre_seizure_data
         #seizure_data = Get_set.seizure_data
 
-        entire_seizure_data = Get_set.pre_during_data
+       
 
         #merged_pre_seizure = [element for row in pre_data for element in row]
         #merged_seizure = [element for row in seizure_data for element in row]
 
-        merged_entire_seizure = [element for row in entire_seizure_data for element in row]
+        merged_entire_seizure = [element for row in data for element in row]
        
         #pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
         #seizure_epochs = Process_data.epoch_transformer(merged_seizure)
@@ -232,17 +223,16 @@ class Process_data:
 
 
         for i in range(len(entire_seizure_calculations)):
-            sorted_seizure_calculations.append(Process_data.sort_data(entire_seizure_calculations[i]))
+            sorted_seizure_calculations.append(Process_data.format_data(entire_seizure_calculations[i]))
 
         #pre_calculations.append(pre_fft)
         #seizure_calculations.append(seizure_fft)
 
         
-
+        #print(len(sorted_seizure_calculations))
         #Get_set.pre_seizure_calculations = pre_calculations
         #Get_set.seizure_calculations = seizure_calculations
-
-        Get_set.entire_seizure_calculations = sorted_seizure_calculations
+        return sorted_seizure_calculations
 
        
 

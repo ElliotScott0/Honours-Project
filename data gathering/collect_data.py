@@ -14,15 +14,17 @@ import math
 seizureFile = pathlib.Path("G:/eeg_data/edf/train/")
 
 seizure_type = 'absz'
-
-channel_name = 'FP2-F4'
+montage = [18 ,19]
+channel_names = ['FP4-F4','F4-C4']
 
 all_file_path = list(seizureFile.rglob("*.edf"))
 all_file_path_csv =list(seizureFile.rglob("*.csv"))
 
 secondSample = 250
 fourSecondSample = secondSample * 4
-eightSecondSample = secondSample * 8
+pre_sample = secondSample * 4
+during_sample = secondSample * 4
+total_sample = pre_sample + during_sample
 
 
 
@@ -37,36 +39,38 @@ class Collect_data:
         pre_seizure = []
         seizure = []
         pre_during_seizure = []
-
-
-        for y in range(len(all_file_path)):
-            with open(str(all_file_path_csv[y])) as file_obj: 
         
-            # Create reader object by passing the file  
-            # object to reader method 
-                data = csv.reader(file_obj) 
+        
+        over = []
+        for i in range(len(montage)):
+            for y in range(len(all_file_path)):
+                with open(str(all_file_path_csv[y])) as file_obj: 
+        
+                # Create reader object by passing the file  
+                # object to reader method 
+                    data = csv.reader(file_obj) 
 
-                #reads row of csv
-                for row in data:
-                    # if finds correct seizure and channel
-                    if(seizure_type in row and channel_name in row):
+                    #reads row of csv
+                    for row in data:
+                        # if finds correct seizure and channel
+                        if(seizure_type in row and channel_names[i] in row):
                         
-                        if (old_file_path != all_file_path_csv[y]):
-                            patient_count +=1
-                            old_file_path = all_file_path_csv[y]
-                        #sets channel
-                        channel = 18
+                            if (old_file_path != all_file_path_csv[y]):
+                                patient_count +=1
+                                old_file_path = all_file_path_csv[y]
+                             #sets channel
                         
-                        #gets the start time in seconds so multiplies by sample rate of 250 to get start point in file
-                        start_time = math.ceil(float(row[1]))*secondSample
-                        #stop_time = math.floor(float(row[2]))*secondSample
+                        
+                            #gets the start time in seconds so multiplies by sample rate of 250 to get start point in file
+                            start_time = math.ceil(float(row[1]))*secondSample
+                            stop_time = math.floor(float(row[2]))*secondSample
                     
-                        file_path_str = str(all_file_path[y])
-                        file = pyedflib.EdfReader(file_path_str)
+                            file_path_str = str(all_file_path[y])
+                            file = pyedflib.EdfReader(file_path_str)
 
                         
-                        #begin pre seizure, if 4 seconds before is before start of file then start from 0
-                        #pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
+                            #begin pre seizure, if 4 seconds before is before start of file then start from 0
+                            #pre_seizure_value = file.readSignal(channel, start_time - fourSecondSample, fourSecondSample, True)
                         
                         #if(pre_seizure_value[0] != -163):                      
                             #pre_seizure.append(pre_seizure_value)
@@ -74,35 +78,39 @@ class Collect_data:
                         
                         
                         
-                        pre_during_value = file.readSignal(channel, start_time - fourSecondSample, eightSecondSample, True)
+                            pre_during_value = file.readSignal(montage[i], start_time - pre_sample, total_sample, True)
                         
-                        if(pre_during_value[0] != -163):                      
-                            pre_during_seizure.append(pre_during_value)
+                            if(pre_during_value[0] != -163 and pre_during_value[1] != -163):                      
+                                pre_during_seizure.append(pre_during_value)
                         
-                            
+                                if(start_time + pre_sample  > stop_time):
+                                    time_off = (start_time + pre_sample - stop_time)/250
+                                    over.append(time_off*5)
+                                
+
+                                else:
+                                    over.append(0)   
                         
-                        file.close()
+                            file.close()
                         
                         # prints data gathered and puts in graph
+                        #chosen = 1
+                        #if(len(pre_during_seizure) == chosen):
+                           # y_axis = pre_during_seizure[chosen-1]
+                            #x_axis = np.linspace(0, 16 , len(pre_during_seizure[chosen -1]))
+                            #plt.plot(x_axis,y_axis)
                         
-                            
-                        #y_axis = pre_seizure
-                        #x_axis = np.linspace(0, 543 , len(pre_seizure))
-                        #plt.plot(x_axis,y_axis)
-                        
-                        #plt.xlabel("seconds")
-                        #plt.show()
+                            #plt.xlabel("seconds")
+                            #plt.show()
 
                         
                             
                         
                 
             file_obj.close()
-        print(len(pre_during_seizure) , "seizure events found for" , seizure_type)
-        print(patient_count , "patients found for" , seizure_type)
-        Get_set.pre_seizure_data = pre_seizure
-        Get_set.seizure_data = seizure
-        Get_set.pre_during_data = pre_during_seizure
+        #print(len(pre_during_seizure) , "seizure events found for" , seizure_type)
+        #print(patient_count , "patients found for" , seizure_type)
+        data = [pre_during_seizure, over]
         return data
 
     
