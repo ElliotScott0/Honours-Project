@@ -108,9 +108,9 @@ class SVC_Train:
 
         # Plot the scree plot
         plt.plot(1, len(eigenvalues) + 1, eigenvalues, marker = "o")
-        plt.xlabel('Principal Component')
+        plt.xlabel('Principal Component Number')
         plt.ylabel('Eigenvalue')
-        plt.title('Scree Plot of Eigenvalues')
+        plt.title('Eigenvalues against Priciple Components')
         plt.show()
 
 

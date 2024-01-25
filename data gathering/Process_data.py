@@ -199,39 +199,19 @@ class Process_data:
     def main(data): 
 
         sorted_seizure_calculations = []
-        #pre_data = Get_set.pre_seizure_data
-        #seizure_data = Get_set.seizure_data
-
-       
-
-        #merged_pre_seizure = [element for row in pre_data for element in row]
-        #merged_seizure = [element for row in seizure_data for element in row]
-
+   
         merged_entire_seizure = [element for row in data for element in row]
        
-        #pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
-        #seizure_epochs = Process_data.epoch_transformer(merged_seizure)
-
+      
         entire_seizure_epochs = Process_data.epoch_transformer(merged_entire_seizure)
 
-        #print(len(pre_epochs))
-        
-        #pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
-        #seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
-
+    
         entire_seizure_calculations = Process_data.get_sorted_epochs(entire_seizure_epochs, "pre + during seizure")
 
 
         for i in range(len(entire_seizure_calculations)):
             sorted_seizure_calculations.append(Process_data.format_data(entire_seizure_calculations[i]))
 
-        #pre_calculations.append(pre_fft)
-        #seizure_calculations.append(seizure_fft)
-
-        
-        #print(len(sorted_seizure_calculations))
-        #Get_set.pre_seizure_calculations = pre_calculations
-        #Get_set.seizure_calculations = seizure_calculations
         return sorted_seizure_calculations
 
        

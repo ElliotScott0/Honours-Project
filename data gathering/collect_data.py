@@ -106,12 +106,17 @@ class Collect_data:
                         
                             
                         
-                
+               
             file_obj.close()
+        print(pre_during_seizure[0]) 
+        with open('output.txt', 'w') as file:
+    
+            for element in pre_during_seizure[0]:
+                file.write(str(element) + '\n')
         #print(len(pre_during_seizure) , "seizure events found for" , seizure_type)
         #print(patient_count , "patients found for" , seizure_type)
-        data = [pre_during_seizure, over]
-        return data
+        #data = [pre_during_seizure, over]
+        return pre_during_seizure, over
 
     
     
