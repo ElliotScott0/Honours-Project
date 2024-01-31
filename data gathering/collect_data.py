@@ -82,6 +82,13 @@ class Collect_data:
                         
                             if(pre_during_value[0] != -163 and pre_during_value[1] != -163):                      
                                 pre_during_seizure.append(pre_during_value)
+                                
+                                #y_axis = pre_during_value
+                                #x_axis = np.linspace(0, 40 , len(pre_during_seizure[0]))
+                                #plt.plot(x_axis,y_axis)
+                        
+                                #plt.xlabel("seconds")
+                                #plt.show()
                         
                                 if(start_time + pre_sample  > stop_time):
                                     time_off = (start_time + pre_sample - stop_time)/250

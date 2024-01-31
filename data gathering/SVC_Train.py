@@ -26,15 +26,15 @@ class SVC_Train:
                 
                 
                     
-                if(j <8):
+                if(j <int((epoch_seconds/epoch_time)/2)):
                     plt.scatter(test_rms[j], tester[j], color='green', marker="+", label='pre')
                 
-                elif(j + over[k]> 15):
+                elif(j> epoch_seconds/epoch_time-1):
                     plt.scatter(test_rms[j], tester[j], color='green', marker="s", label='post')
                 else:
                     plt.scatter(test_rms[j], tester[j], color='blue', marker=".", label='during')
 
-                plt.annotate(j+1, (test_rms[j], tester[j]), textcoords="offset points", xytext=(0, 16), ha='center')
+                plt.annotate(j+1, (test_rms[j], tester[j]), textcoords="offset points", xytext=(0, 40), ha='center')
             plt.title(k)
             plt.xlabel("kms_value")
             plt.ylabel(names[9])
@@ -134,6 +134,57 @@ class SVC_Train:
         fft_max_frequency = [element for row in data[8] for element in row]
         fft_max_magnitude = [element for row in data[9] for element in row]
 
+        #results = SVC_Train.annotations(over)  #use this if you want doctors annotations
+        results = SVC_Train.get_results()   #use this for custom annotations
+        
+
+        SVC_Train.scatter_graph(data, results) # shows scatterfraph for plotted points and results
+
+        df = []
+      
+
+        d = {'rms_value': rms_value, 'variance_values': variance_values, 'std_dev_values': std_dev_values,
+            'normalized_entropy_values': normalized_entropy_values,'fft_max_frequency': fft_max_frequency,
+            'fft_max_magnitude': fft_max_magnitude, 'results': results }
+            
+        df = pd.DataFrame(data=d)
+        
+        return df
+    
+
+
+    def scatter_graph(data, results):
+        counter = 0
+        test = data[9]
+        t_rms = data[0]
+        for k in range(len(t_rms)):
+            
+            tester = test[k]
+            test_rms = t_rms[k]
+            for j in range(len(t_rms[0])):
+                
+                
+                    
+                if(results[counter] == 0):
+                    plt.scatter(test_rms[j], tester[j], color='green', marker="+", label='non')
+                
+                elif(results[counter] == 1):
+                    plt.scatter(test_rms[j], tester[j], color='blue', marker="s", label='yes')
+                
+                plt.annotate(j+1, (test_rms[j], tester[j]), textcoords="offset points", xytext=(0, 40), ha='center')
+                counter += 1
+
+            plt.title(k +1)
+            plt.xlabel("kms_value")
+            plt.ylabel('fft_max_magnitude')
+            #plt.legend(loc='upper left', fontsize='small')
+            plt.show()
+
+
+            
+
+    def annotations(over):
+
         default = []
         for _ in range(int((epoch_seconds/epoch_time)/2)):  # Loop 20 times, but only perform actions for the first 10 iterations
             default.append(0)
@@ -153,26 +204,24 @@ class SVC_Train:
                     if(j <int((epoch_seconds/epoch_time)/2)):
                         new.append(0)
                     elif(j + over[i]> len(default)-1):
-                        #print(i , " ", j , " " , over[i])
+                        print(i , " ", j , " " , over[i])
                         new.append(0)
                     else:
                         new.append(1)
                 new_array.append(new)
-
         results = [element for row in new_array for element in row]
+        return results
 
-        df = []
-        i =0
-        
-       
-        d = {'rms_value': rms_value, 'variance_values': variance_values, 'std_dev_values': std_dev_values,
-            'normalized_entropy_values': normalized_entropy_values,'fft_max_frequency': fft_max_frequency,
-            'fft_max_magnitude': fft_max_magnitude, 'results': results }
-            
-        df = pd.DataFrame(data=d)
-        
-        return df
+    def get_results():
+        results = []
+        file_path = 'g:\HONOURS PROJECT\Honours-Project\data gathering\self_anotaion.txt' 
+        with open(file_path, 'r') as file:
+   
+            for line in file: 
+                for char in line.strip():
+                    results.append(int(char)) 
     
+        return results
 
     def main(data, over):
         #SVC_Train.scatter(data, over)

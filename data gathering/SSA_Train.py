@@ -74,17 +74,17 @@ class SSA_Train():
             rc2 = SSA_Train.SSA_1D(raw_data[i], first, last)
             rc2_array.append(rc2)
 
-            t = np.arange(0, len(rc2))
-            plt.subplot(3, 1, 2)
-            plt.plot(t, rc2, label='rca')
-            plt.title('Plot of rc2')
-            plt.legend()
+            #t = np.arange(0, len(rc2))
+            #plt.subplot(3, 1, 2)
+            #plt.plot(t, rc2, label='rca')
+            #plt.title('Plot of rc2')
+            #plt.legend()
 
            
 
 
-            plt.tight_layout()
-            plt.show()
+            #plt.tight_layout()
+            #plt.show()
 
             #print(rca ,rc1, rc3)
 
