@@ -181,7 +181,7 @@ class SVC_Train:
             plt.show()
 
 
-            
+
 
     def annotations(over):
 
