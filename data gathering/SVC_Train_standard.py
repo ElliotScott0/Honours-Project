@@ -2,48 +2,49 @@ from sklearn.metrics import f1_score, roc_curve, auc, recall_score, confusion_ma
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from sklearn.impute import SimpleImputer
-
 import seaborn as sns
 import numpy as np
 
-class SVC_Train:
+class SVC_Train_standard:
  
 
     
     def train_SVC(df):
-        #scores = []
-        #for i in range(20):
         X = df.drop('results', axis=1).copy()
         X_cleaned = X.dropna()
         #print(X)
         y = df['results'].copy()
         y_cleaned = y[X_cleaned.index]
-       
+        
         
         X_train, X_test, y_train, y_test = train_test_split(X_cleaned, y_cleaned, test_size=0.2, random_state=42)
         
-
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)  
+        #print(X_train)
+        #print(X_train_scaled)      
+        
         model = SVC(probability=True)
-    
-        #model.fit(X_train, y_cleaned)
-        model.fit(X_train, y_train)
+
+        model.fit(X_train_scaled, y_train)
 
         
 
         #model score
-        model_score = model.score(X_test, y_test)
+        model_score = model.score(X_test_scaled , y_test)
         
         # Calculate F1-score
-        y_pred = model.predict(X_test)
+        y_pred = model.predict(X_test_scaled )
         f1 = f1_score(y_test, y_pred)
 
         #calculate sensitivity
         sensitivity = recall_score(y_test, y_pred)
 
         # Calculate AUC-ROC score
-        y_prob = model.predict_proba(X_test)[:, 1]
+        y_prob = model.predict_proba(X_test_scaled )[:, 1]
         fpr, tpr, thresholds = roc_curve(y_test, y_prob)
 
         # Calculate AUC
@@ -102,5 +103,5 @@ class SVC_Train:
 
     def main(data_frame):
         
-        SVC_Train.train_SVC(data_frame)
+        SVC_Train_standard.train_SVC(data_frame)
         #SVC_Train.train_PCA(data_frame)

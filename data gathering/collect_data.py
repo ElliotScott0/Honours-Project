@@ -13,9 +13,11 @@ import math
 #import matplotlib.pyplot as plt
 seizureFile = pathlib.Path("G:/eeg_data/edf/train/")
 
+
 seizure_type = 'absz'
-montage = [18 ,19]
-channel_names = ['FP4-F4','F4-C4']
+#seizure_type = 'gnsz'
+montage = [19]
+channel_names = ['F4-C4']
 
 all_file_path = list(seizureFile.rglob("*.edf"))
 all_file_path_csv =list(seizureFile.rglob("*.csv"))
@@ -54,7 +56,7 @@ class Collect_data:
                     for row in data:
                         # if finds correct seizure and channel
                         if(seizure_type in row and channel_names[i] in row):
-                        
+                            #print("s")
                             if (old_file_path != all_file_path_csv[y]):
                                 patient_count +=1
                                 old_file_path = all_file_path_csv[y]
@@ -79,36 +81,33 @@ class Collect_data:
                         
                         
                             pre_during_value = file.readSignal(montage[i], start_time - pre_sample, total_sample, True)
-                        
-                            if(pre_during_value[0] != -163 and pre_during_value[1] != -163):                      
-                                pre_during_seizure.append(pre_during_value)
+                            #print(pre_during_value , "here")
+                            try:
+                                if(pre_during_value[0] != -163 and pre_during_value[1] != -163):                      
+                                    pre_during_seizure.append(pre_during_value)
                               
-                                #y_axis = pre_during_value
-                                #x_axis = np.linspace(0, 40 , len(pre_during_seizure[0]))
-                                #plt.plot(x_axis,y_axis)
-                                #plt.title(len(pre_during_seizure))
-                                #plt.xlabel("seconds")
-                                #plt.show()
+                                    #y_axis = pre_during_value
+                                    #x_axis = np.linspace(0, 40 , len(pre_during_seizure[0]))
+                                    #plt.plot(x_axis,y_axis)
+                                    #plt.title(len(pre_during_seizure))
+                                    #plt.xlabel("seconds")
+                                    #plt.show()
+
                         
-                                if(start_time + pre_sample  > stop_time):
-                                    time_off = (start_time + pre_sample - stop_time)/250
-                                    over.append(time_off*5)
+                                    if(start_time + pre_sample  > stop_time):
+                                        time_off = (start_time + pre_sample - stop_time)/250
+                                        over.append(time_off*5)
                                 
 
-                                else:
-                                    over.append(0)   
+                                    else:
+                                        over.append(0)   
+                            except Exception as e:
+                                # Handle other exceptions
+                                print("An error occurred:", e)
                         
                             file.close()
                         
-                        # prints data gathered and puts in graph
-                        #chosen = 1
-                        #if(len(pre_during_seizure) == chosen):
-                           # y_axis = pre_during_seizure[chosen-1]
-                            #x_axis = np.linspace(0, 16 , len(pre_during_seizure[chosen -1]))
-                            #plt.plot(x_axis,y_axis)
-                        
-                            #plt.xlabel("seconds")
-                            #plt.show()
+                       
 
                         
                             
@@ -121,7 +120,7 @@ class Collect_data:
             for element in pre_during_seizure[0]:
                 file.write(str(element) + '\n')
         #print(len(pre_during_seizure) , "seizure events found for" , seizure_type)
-        #print(patient_count , "patients found for" , seizure_type)
+        print(patient_count/len(channel_names) , "patients found for" , seizure_type)
         #data = [pre_during_seizure, over]
         return pre_during_seizure, over
 
