@@ -27,6 +27,10 @@ class MainClass:
     Train_Random_Forest.main(df)
 
     print()
+    print("SVM results using standerdization ")
+    SVC_Train_standard.main(df)
+
+    print()
     print("processing SSA and creating dataframe")
     ssa_data = SSA_Train.main(EEG_data ,1, 40)
     processed_data =Process_data.main(ssa_data)
