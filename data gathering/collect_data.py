@@ -8,6 +8,7 @@ import pyedflib
 import pandas
 import csv
 import math
+from Process_data import epoch_time
 
 #import pandas
 #import matplotlib.pyplot as plt
@@ -96,7 +97,7 @@ class Collect_data:
                         
                                     if(start_time + pre_sample  > stop_time):
                                         time_off = (start_time + pre_sample - stop_time)/250
-                                        over.append(time_off*5)
+                                        over.append(time_off*(1/epoch_time)
                                 
 
                                     else:
