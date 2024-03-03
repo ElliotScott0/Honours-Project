@@ -38,10 +38,33 @@ class Process_data:
     #function to calculate rms
     def calculate_rms(data):
         return np.sqrt(np.mean(data**2))
+    
+    #function to calculate variance
+    def calculate_var(data):
+        return np.var(data)
+    
+    #function to calculate STD
+    def calculate_std(data):
+        return np.std(data)
+    
+    #function to calculate MAD
+    def calculate_MAD(data):
+        return np.mean(np.abs(data - np.mean(data)))
 
     # Function to calculate Log Energy
     def calculate_log_energy(data):
         return np.sum(np.log(1 + data**2))
+    
+    #function to calculate kurtosis
+    def calculate_kurtosis(data):
+        return kurtosis(data)
+    
+    #function to calculate skewness
+    def calculate_skew(data):
+        return skew(data)
+    
+
+   
 
     # Function to calculate Normalized Entropy
     def calculate_normalized_entropy(data):
@@ -136,13 +159,13 @@ class Process_data:
                 
                 try:
                     partial_rms_values.append(Process_data.calculate_rms(epochs[y+i]))
-                    partial_variance_values.append(np.var(epochs[y+i]))
-                    partial_std_dev_values.append(np.std(epochs[y+i]))
+                    partial_variance_values.append(Process_data.calculate_var(epochs[y+i]))
+                    partial_std_dev_values.append(Process_data.calculate_std(epochs[y+i]))
                     partial_log_energy_values.append(Process_data.calculate_log_energy(epochs[y+i]))
                     partial_normalized_entropy_values.append(Process_data.calculate_normalized_entropy(epochs[y+i]))
-                    partial_mad_values.append(np.mean(np.abs(epochs[y+i] - np.mean(epochs[y+i]))))  # Mean Absolute Deviation
-                    partial_kurtosis_values.append(kurtosis(epochs[y+i]))
-                    partial_skewness_values.append(skew(epochs[y+i]))
+                    partial_mad_values.append(Process_data.calculate_MAD(epochs[y+i]))  # Mean Absolute Deviation
+                    partial_kurtosis_values.append(Process_data.calculate_kurtosis(epochs[y+i]))
+                    partial_skewness_values.append(Process_data.calculate_skew(epochs[y+i]))
                     partial_fft_max_frequency.append(Process_data.calculate_fft_fre(epochs[y+i]))
                     partial_fft_max_magnitude.append(Process_data.calculate_fft_mag(epochs[y+i]))
                    
