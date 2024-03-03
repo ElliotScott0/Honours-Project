@@ -1,4 +1,4 @@
-from Collect_data import total_sample
+from collect_data import total_sample
 import numpy as np
 from Get_Set import Get_set
 from scipy.stats import kurtosis, skew

@@ -1,4 +1,4 @@
-from Collect_data import *
+from collect_data import *
 from Process_data import *
 from SVC_Train import *
 from SSA_Train import *
