@@ -1,19 +1,20 @@
+from collect_data import total_sample
 import numpy as np
 from Get_Set import Get_set
 from scipy.stats import kurtosis, skew
 from scipy.stats import entropy
 import matplotlib.pyplot as plt
 
-epoch_time = 0.5
+epoch_time = 0.2
 epoch_length = int(250*epoch_time)  # change to 250/epoch time if epoch time is > 1 and do same further down when changing plotting
-epoch_seconds = 8
+epoch_seconds = total_sample/250
 num_epochs = 0
 
 
 pre_calculations = []
 seizure_calculations = []
 
-sorted_seizure_calculations = []
+
 
 
 class Process_data:
@@ -22,7 +23,7 @@ class Process_data:
     # turns the eeg data into epochs of desired legnth
     def epoch_transformer(data):
         num_epochs = int(len(data)/epoch_length)
-        print(num_epochs)
+        
         # Create an array to store the epochs
         epochs = np.zeros((num_epochs, epoch_length))
 
@@ -37,10 +38,33 @@ class Process_data:
     #function to calculate rms
     def calculate_rms(data):
         return np.sqrt(np.mean(data**2))
+    
+    #function to calculate variance
+    def calculate_var(data):
+        return np.var(data)
+    
+    #function to calculate STD
+    def calculate_std(data):
+        return np.std(data)
+    
+    #function to calculate MAD
+    def calculate_MAD(data):
+        return np.mean(np.abs(data - np.mean(data)))
 
     # Function to calculate Log Energy
     def calculate_log_energy(data):
         return np.sum(np.log(1 + data**2))
+    
+    #function to calculate kurtosis
+    def calculate_kurtosis(data):
+        return kurtosis(data)
+    
+    #function to calculate skewness
+    def calculate_skew(data):
+        return skew(data)
+    
+
+   
 
     # Function to calculate Normalized Entropy
     def calculate_normalized_entropy(data):
@@ -68,19 +92,8 @@ class Process_data:
         
         signal_without_dc = data - np.mean(data)
         
-        Epoch_fft = np.fft.rfft(signal_without_dc)
-
-        #print(np.argmax(np.abs(Epoch_fft[:63])))
-        
-        
-        freq =  np.linspace(0, 125, 63, endpoint=False)
-        #plt.figure()
-        #plt.plot(freq, np.abs(Epoch_fft[:63]))
-        #plt.xlabel('Frequency (Hz)')
-        #plt.ylabel('Magnitude')
-        #plt.title('FFT of epoch Data')
-        #plt.show()
-            
+        Epoch_fft = np.fft.fft(signal_without_dc)
+          
         return np.argmax(np.abs(Epoch_fft[:63]))
 
   
@@ -146,13 +159,13 @@ class Process_data:
                 
                 try:
                     partial_rms_values.append(Process_data.calculate_rms(epochs[y+i]))
-                    partial_variance_values.append(np.var(epochs[y+i]))
-                    partial_std_dev_values.append(np.std(epochs[y+i]))
+                    partial_variance_values.append(Process_data.calculate_var(epochs[y+i]))
+                    partial_std_dev_values.append(Process_data.calculate_std(epochs[y+i]))
                     partial_log_energy_values.append(Process_data.calculate_log_energy(epochs[y+i]))
                     partial_normalized_entropy_values.append(Process_data.calculate_normalized_entropy(epochs[y+i]))
-                    partial_mad_values.append(np.mean(np.abs(epochs[y+i] - np.mean(epochs[y+i]))))  # Mean Absolute Deviation
-                    partial_kurtosis_values.append(kurtosis(epochs[y+i]))
-                    partial_skewness_values.append(skew(epochs[y+i]))
+                    partial_mad_values.append(Process_data.calculate_MAD(epochs[y+i]))  # Mean Absolute Deviation
+                    partial_kurtosis_values.append(Process_data.calculate_kurtosis(epochs[y+i]))
+                    partial_skewness_values.append(Process_data.calculate_skew(epochs[y+i]))
                     partial_fft_max_frequency.append(Process_data.calculate_fft_fre(epochs[y+i]))
                     partial_fft_max_magnitude.append(Process_data.calculate_fft_mag(epochs[y+i]))
                    
@@ -175,27 +188,27 @@ class Process_data:
             fft_max_magnitude.append(partial_fft_max_magnitude)
 
         #print(len(rms_values[0]))
-        Process_data.plot_percentiles(rms_values, "rms_value ", label)
-        Process_data.plot_percentiles(variance_values, "variance_value ", label)
-        Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
-        Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
-        Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
-        Process_data.plot_percentiles(mad_values, "mad_value ", label)
-        Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
-        Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
+        #Process_data.plot_percentiles(rms_values, "rms_value ", label)
+        #Process_data.plot_percentiles(variance_values, "variance_value ", label)
+        #Process_data.plot_percentiles(std_dev_values, "std_dev_value ", label)
+        #Process_data.plot_percentiles(log_energy_values, "log_energy_value ", label)
+        #Process_data.plot_percentiles(normalized_entropy_values, "normalized_entropy_values ", label)
+        #Process_data.plot_percentiles(mad_values, "mad_value ", label)
+        #Process_data.plot_percentiles(kurtosis_values, "kurtosis_value ", label)
+        #Process_data.plot_percentiles(skewness_values, "skewness_value ", label)
 
-        Process_data.plot_percentiles(fft_max_frequency, "fft_max_frequency ", label)
-        Process_data.plot_percentiles(fft_max_magnitude, "fft_max_magnitude ", label)
+        #Process_data.plot_percentiles(fft_max_frequency, "fft_max_frequency ", label)
+        #Process_data.plot_percentiles(fft_max_magnitude, "fft_max_magnitude ", label)
 
              
-        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, fft_max_frequency, fft_max_magnitude]
+        data = [rms_values, variance_values, std_dev_values, log_energy_values, normalized_entropy_values, mad_values, kurtosis_values, skewness_values, fft_max_frequency, fft_max_magnitude]
             
           
         
         return data
     
     # sorts data into arrays of patients for machine learning
-    def sort_data(data):  
+    def format_data(data):  
         
         sorted_data = []
         for i in range(len(data[0])):
@@ -206,43 +219,23 @@ class Process_data:
         return sorted_data
     
     #runs functions        
-    def main(): 
+    def main(data): 
 
-        #pre_data = Get_set.pre_seizure_data
-        #seizure_data = Get_set.seizure_data
-
-        entire_seizure_data = Get_set.pre_during_data
-
-        #merged_pre_seizure = [element for row in pre_data for element in row]
-        #merged_seizure = [element for row in seizure_data for element in row]
-
-        merged_entire_seizure = [element for row in entire_seizure_data for element in row]
+        sorted_seizure_calculations = []
+   
+        merged_entire_seizure = [element for row in data for element in row]
        
-        #pre_epochs = Process_data.epoch_transformer(merged_pre_seizure)
-        #seizure_epochs = Process_data.epoch_transformer(merged_seizure)
-
+      
         entire_seizure_epochs = Process_data.epoch_transformer(merged_entire_seizure)
 
-        #print(len(pre_epochs))
-        
-        #pre_calculations = Process_data.get_sorted_epochs(pre_epochs, "pre seizure")
-        #seizure_calculations = Process_data.get_sorted_epochs(seizure_epochs, "seizure")
-
+    
         entire_seizure_calculations = Process_data.get_sorted_epochs(entire_seizure_epochs, "pre + during seizure")
 
 
         for i in range(len(entire_seizure_calculations)):
-            sorted_seizure_calculations.append(Process_data.sort_data(entire_seizure_calculations[i]))
+            sorted_seizure_calculations.append(Process_data.format_data(entire_seizure_calculations[i]))
 
-        #pre_calculations.append(pre_fft)
-        #seizure_calculations.append(seizure_fft)
-
-        
-
-        #Get_set.pre_seizure_calculations = pre_calculations
-        #Get_set.seizure_calculations = seizure_calculations
-
-        Get_set.entire_seizure_calculations = sorted_seizure_calculations
+        return sorted_seizure_calculations
 
        
 

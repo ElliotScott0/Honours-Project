@@ -53,6 +53,7 @@ class Get_set:
     
 
     # creates a property to return pre seizure calculations
+    
     @property
     def pre_seizure_calculations(self):
         return self._pre_seizure_calculations 
@@ -63,13 +64,15 @@ class Get_set:
         self._pre_seizure_data = value[:]
 
         
-
+    
     @property
     def entire_seizure_calculations(self):
         return self._entire_seizure_calculations
     
     # sets the property for seizure calculations
+    
     @entire_seizure_calculations.setter
     def entire_seizure_calculations(self, value: list):
+       
         self._entire_seizure_calculations = value[:]
     
